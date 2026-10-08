@@ -1,16 +1,36 @@
 use reqwest::blocking::Client;
 use scraper::{Html, Selector};
+use serde::Serialize;
 use std::io::Read;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Heading {
     pub level: u8,
     pub text: String,
 }
 
-pub fn parse_headings(html: &str) -> Vec<Heading> {
-    let document = Html::parse_document(html);
+#[derive(Debug, PartialEq, Eq, Serialize)]
+pub struct ScrapedPage {
+    pub url: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub headings: Vec<Heading>,
+    pub links: Vec<String>,
+}
 
+pub fn parse_links(document: &Html) -> Vec<String> {
+    let selector = Selector::parse("a[href]").expect("Harcoded links should be vaid");
+
+    document
+        .select(&selector)
+        .filter_map(|elem| elem.value().attr("href"))
+        .map(str::trim)
+        .filter(|href| !href.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+
+pub fn parse_headings(document: &Html) -> Vec<Heading> {
     let selector = Selector::parse("h1, h2, h3, h4, h5, h6").expect("headings should be valid");
 
     //took 2 hours to do ts
@@ -30,9 +50,7 @@ pub fn parse_headings(html: &str) -> Vec<Heading> {
         .collect()
 }
 
-pub fn parse_title(html: &str) -> Option<String> {
-    let document = Html::parse_document(html);
-
+pub fn parse_title(document: &Html) -> Option<String> {
     let selector = Selector::parse("title").expect("hardcoded title selector should be valid");
 
     document
@@ -43,9 +61,7 @@ pub fn parse_title(html: &str) -> Option<String> {
         .filter(|title| !title.is_empty())
 }
 
-pub fn parse_description(html: &str) -> Option<String> {
-    let document = Html::parse_document(html);
-
+pub fn parse_description(document: &Html) -> Option<String> {
     let selector = Selector::parse(r#"meta[name="description"]"#)
         .expect("hardcoded description selector should be valid");
 
@@ -57,14 +73,20 @@ pub fn parse_description(html: &str) -> Option<String> {
         .filter(|desc| !desc.is_empty())
         .map(str::to_owned)
 }
-pub fn fetch_html(url: &str, client: &Client) -> Result<String, Box<dyn std::error::Error>> {
-    let mut response = client.get(url).send()?;
+pub fn fetch_html(url: &str, client: &Client) -> Result<String, reqwest::Error> {
+    let response = client.get(url).send()?.error_for_status()?;
 
-    response.error_for_status_ref()?;
+    response.text()
+}
 
-    let mut body = String::new();
+pub fn parse_page(url: &str, html: &str) -> ScrapedPage {
+    let document = Html::parse_document(html);
 
-    response.read_to_string(&mut body)?;
-
-    Ok(body)
+    ScrapedPage {
+        url: url.to_owned(),
+        title: parse_title(&document),
+        description: parse_description(&document),
+        headings: parse_headings(&document),
+        links: parse_links(&document),
+    }
 }

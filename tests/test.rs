@@ -174,3 +174,43 @@ fn test_unrelated_meta_tag() {
 
     assert_eq!(description, None);
 }
+use web_scraper::{Heading, parse_headings};
+
+#[test]
+fn test_parse_headings() {
+    let html = r#"
+        <html>
+            <body>
+                <h1>Introduction</h1>
+                <h2>Installation</h2>
+                <h3>Dependencies</h3>
+                <p>Not a heading</p>
+                <h2>Usage</h2>
+                <h4>   </h4>
+            </body>
+        </html>
+    "#;
+
+    let headings = parse_headings(html);
+
+    let expected = vec![
+        Heading {
+            level: 1,
+            text: "Introduction".to_string(),
+        },
+        Heading {
+            level: 2,
+            text: "Installation".to_string(),
+        },
+        Heading {
+            level: 3,
+            text: "Dependencies".to_string(),
+        },
+        Heading {
+            level: 2,
+            text: "Usage".to_string(),
+        },
+    ];
+
+    assert_eq!(headings, expected);
+}

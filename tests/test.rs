@@ -1,4 +1,6 @@
 mod tests {
+    use web_scraper::parse_description;
+
     #[ignore]
     #[test]
     pub fn test_connect() {
@@ -82,5 +84,95 @@ mod tests {
             None,
             "The parser should return None for an missing title"
         );
+    }
+
+    #[test]
+    fn test_valid_description() {
+        let html = r#"
+        <html>
+            <head>
+                <meta name="description" content="Hello">
+            </head>
+        </html>
+    "#;
+
+        let description = parse_description(html);
+
+        assert_eq!(description.as_deref(), Some("Hello"));
+    }
+
+    #[test]
+    fn test_missing_description() {
+        let html = r#"
+        <html>
+            <head>
+                <title>Test Page</title>
+            </head>
+        </html>
+    "#;
+
+        let description = parse_description(html);
+
+        assert_eq!(description, None);
+    }
+
+    #[test]
+    fn test_description_without_content() {
+        let html = r#"
+        <html>
+            <head>
+                <meta name="description">
+            </head>
+        </html>
+    "#;
+
+        let description = parse_description(html);
+
+        assert_eq!(description, None);
+    }
+
+    #[test]
+    fn test_empty_description() {
+        let html = r#"
+        <html>
+            <head>
+                <meta name="description" content="">
+            </head>
+        </html>
+    "#;
+
+        let description = parse_description(html);
+
+        assert_eq!(description, None);
+    }
+
+    #[test]
+    fn test_whitespace_description() {
+        let html = r#"
+        <html>
+            <head>
+                <meta name="description" content="   ">
+            </head>
+        </html>
+    "#;
+
+        let description = parse_description(html);
+
+        assert_eq!(description, None);
+    }
+
+    #[test]
+    fn test_unrelated_meta_tag() {
+        let html = r#"
+        <html>
+            <head>
+                <meta name="viewport" content="width=device-width">
+            </head>
+        </html>
+    "#;
+
+        let description = parse_description(html);
+
+        assert_eq!(description, None);
     }
 }

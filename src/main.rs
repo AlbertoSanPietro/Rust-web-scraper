@@ -2,6 +2,7 @@ use reqwest::blocking::Client;
 use std::process::{self};
 use web_scraper::fetch_html;
 use web_scraper::parse_description;
+use web_scraper::parse_headings;
 use web_scraper::parse_title;
 
 fn main() {
@@ -32,4 +33,15 @@ fn main() {
 
     println!("title: {}", title);
     println!("Description: {description}");
+
+    let headings = parse_headings(&body);
+
+    if headings.is_empty() {
+        eprintln!("No headings found");
+    } else {
+        println!("Found {} headings", headings.len());
+        for heading in &headings {
+            println!("H{}; {}", heading.level, heading.text);
+        }
+    }
 }

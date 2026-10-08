@@ -1,6 +1,35 @@
 use reqwest::blocking::Client;
 use scraper::{Html, Selector};
 use std::io::Read;
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Heading {
+    pub level: u8,
+    pub text: String,
+}
+
+pub fn parse_headings(html: &str) -> Vec<Heading> {
+    let document = Html::parse_document(html);
+
+    let selector = Selector::parse("h1, h2, h3, h4, h5, h6").expect("headings should be valid");
+
+    //took 2 hours to do ts
+    document
+        .select(&selector)
+        .filter_map(|elem| {
+            let level = elem.value().name().strip_prefix('h')?.parse::<u8>().ok()?;
+
+            let text = elem.text().collect::<String>().trim().to_owned();
+
+            if text.is_empty() {
+                return None;
+            }
+
+            Some(Heading { level, text })
+        })
+        .collect()
+}
+
 pub fn parse_title(html: &str) -> Option<String> {
     let document = Html::parse_document(html);
 

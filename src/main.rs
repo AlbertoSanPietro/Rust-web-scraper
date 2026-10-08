@@ -1,4 +1,4 @@
-use reqwest::blocking::get;
+use reqwest::blocking::Client;
 use scraper::{Html, Selector};
 use std::{
     io::Read,
@@ -31,8 +31,9 @@ fn parse_title(html: &str) -> Option<String> {
         .next()
         .map(|e| e.text().collect::<String>().trim().to_string())
 }
-fn send_html_get(hostname: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let mut response = get(hostname)?;
+
+fn fetch_html(url: &str, client: &Client) -> Result<String, Box<dyn std::error::Error>> {
+    let mut response = client.get(url).send()?;
 
     response.error_for_status_ref()?;
 
@@ -44,11 +45,15 @@ fn send_html_get(hostname: &str) -> Result<String, Box<dyn std::error::Error>> {
 }
 
 fn main() {
-    let hostname = "https://www.chiark.greenend.org.uk/~sgtatham/coroutines.html";
+    //let url = "https://www.chiark.greenend.org.uk/~sgtatham/coroutines.html";
+    let url = "https://docs.rs/reqwest/latest/reqwest/blocking/struct.Client.html";
 
-    println!("Here!");
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .build()
+        .unwrap();
 
-    let body: String = match send_html_get(hostname) {
+    let body: String = match fetch_html(url, &client) {
         Ok(body) => body,
         Err(error) => {
             eprintln!("Error : {}", error);
@@ -58,14 +63,7 @@ fn main() {
 
     println!("Length: {}", body.len());
 
-    let html = r#"
-<html>
-<head>
-</head>
-<body></body>
-</html>
-"#;
-    let title = parse_title(html);
+    let title = parse_title(&body);
 
     let title_string = match title {
         Some(s) => s,
@@ -76,10 +74,10 @@ fn main() {
 
     //There is definetely a more elegant way
     //I dont know it
-    /*
+
     let fake_host = "https://www.chiark.greenend.org.uk/gtatham/coroutines.html";
 
-    let fake_body = send_html_get(fake_host);
+    let fake_body = fetch_html(fake_host, &client);
     let fake_count: usize = match fake_body {
         Ok(fake_body) => {
             println!("Everything cool for now");
@@ -91,5 +89,4 @@ fn main() {
         }
     };
     println!("Fake count: {}", fake_count);
-    */
 }

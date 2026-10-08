@@ -1,25 +1,24 @@
-mod tests {
-    use web_scraper::parse_description;
+use web_scraper::parse_description;
 
-    #[ignore]
-    #[test]
-    pub fn test_connect() {
-        let fake_host = "https://www.chiark.greenend.org.uk/gtatham/coroutines.html";
-        let client = reqwest::blocking::Client::builder()
-            .timeout(std::time::Duration::from_secs(15))
-            .build()
-            .expect("Failed to build HTTP client");
+#[ignore]
+#[test]
+pub fn test_connect() {
+    let fake_host = "https://www.chiark.greenend.org.uk/gtatham/coroutines.html";
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .build()
+        .expect("Failed to build HTTP client");
 
-        let body = web_scraper::fetch_html(fake_host, &client).expect("Failed to fetch html");
+    let body = web_scraper::fetch_html(fake_host, &client).expect("Failed to fetch html");
 
-        assert!(!body.is_empty(), "The server returned an empty response");
+    assert!(!body.is_empty(), "The server returned an empty response");
 
-        println!("Fetched {} bytes successfully", body.len());
-    }
+    println!("Fetched {} bytes successfully", body.len());
+}
 
-    #[test]
-    pub fn test_title_parser() {
-        let fake_html = r#"
+#[test]
+pub fn test_title_parser() {
+    let fake_html = r#"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,17 +33,17 @@ mod tests {
 </body>
 </html>
 "#;
-        let title = web_scraper::parse_title(fake_html);
+    let title = web_scraper::parse_title(fake_html);
 
-        assert_eq!(
-            title.as_deref(),
-            Some("Rust Web Scraper Test"),
-            "The Parser returned an incorrect title"
-        );
-    }
-    #[test]
-    pub fn test_empty_title() {
-        let fake_html = r#"
+    assert_eq!(
+        title.as_deref(),
+        Some("Rust Web Scraper Test"),
+        "The Parser returned an incorrect title"
+    );
+}
+#[test]
+pub fn test_empty_title() {
+    let fake_html = r#"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,17 +55,17 @@ mod tests {
 </html>
 "#;
 
-        let title = web_scraper::parse_title(fake_html);
+    let title = web_scraper::parse_title(fake_html);
 
-        assert_eq!(
-            title.as_deref(),
-            None,
-            "The parser should return None for an empty title"
-        );
-    }
-    #[test]
-    pub fn test_missing_title() {
-        let fake_html = r#"
+    assert_eq!(
+        title.as_deref(),
+        None,
+        "The parser should return None for an empty title"
+    );
+}
+#[test]
+pub fn test_missing_title() {
+    let fake_html = r#"
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,18 +76,18 @@ mod tests {
 </html>
 "#;
 
-        let title = web_scraper::parse_title(fake_html);
+    let title = web_scraper::parse_title(fake_html);
 
-        assert_eq!(
-            title.as_deref(),
-            None,
-            "The parser should return None for an missing title"
-        );
-    }
+    assert_eq!(
+        title.as_deref(),
+        None,
+        "The parser should return None for an missing title"
+    );
+}
 
-    #[test]
-    fn test_valid_description() {
-        let html = r#"
+#[test]
+fn test_valid_description() {
+    let html = r#"
         <html>
             <head>
                 <meta name="description" content="Hello">
@@ -96,14 +95,14 @@ mod tests {
         </html>
     "#;
 
-        let description = parse_description(html);
+    let description = parse_description(html);
 
-        assert_eq!(description.as_deref(), Some("Hello"));
-    }
+    assert_eq!(description.as_deref(), Some("Hello"));
+}
 
-    #[test]
-    fn test_missing_description() {
-        let html = r#"
+#[test]
+fn test_missing_description() {
+    let html = r#"
         <html>
             <head>
                 <title>Test Page</title>
@@ -111,14 +110,14 @@ mod tests {
         </html>
     "#;
 
-        let description = parse_description(html);
+    let description = parse_description(html);
 
-        assert_eq!(description, None);
-    }
+    assert_eq!(description, None);
+}
 
-    #[test]
-    fn test_description_without_content() {
-        let html = r#"
+#[test]
+fn test_description_without_content() {
+    let html = r#"
         <html>
             <head>
                 <meta name="description">
@@ -126,14 +125,14 @@ mod tests {
         </html>
     "#;
 
-        let description = parse_description(html);
+    let description = parse_description(html);
 
-        assert_eq!(description, None);
-    }
+    assert_eq!(description, None);
+}
 
-    #[test]
-    fn test_empty_description() {
-        let html = r#"
+#[test]
+fn test_empty_description() {
+    let html = r#"
         <html>
             <head>
                 <meta name="description" content="">
@@ -141,14 +140,14 @@ mod tests {
         </html>
     "#;
 
-        let description = parse_description(html);
+    let description = parse_description(html);
 
-        assert_eq!(description, None);
-    }
+    assert_eq!(description, None);
+}
 
-    #[test]
-    fn test_whitespace_description() {
-        let html = r#"
+#[test]
+fn test_whitespace_description() {
+    let html = r#"
         <html>
             <head>
                 <meta name="description" content="   ">
@@ -156,14 +155,14 @@ mod tests {
         </html>
     "#;
 
-        let description = parse_description(html);
+    let description = parse_description(html);
 
-        assert_eq!(description, None);
-    }
+    assert_eq!(description, None);
+}
 
-    #[test]
-    fn test_unrelated_meta_tag() {
-        let html = r#"
+#[test]
+fn test_unrelated_meta_tag() {
+    let html = r#"
         <html>
             <head>
                 <meta name="viewport" content="width=device-width">
@@ -171,8 +170,7 @@ mod tests {
         </html>
     "#;
 
-        let description = parse_description(html);
+    let description = parse_description(html);
 
-        assert_eq!(description, None);
-    }
+    assert_eq!(description, None);
 }

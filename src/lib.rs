@@ -1,5 +1,5 @@
 use reqwest::blocking::Client;
-use scraper::{Html, Selector, selector};
+use scraper::{Html, Selector};
 use std::io::Read;
 pub fn parse_title(html: &str) -> Option<String> {
     let document = Html::parse_document(html);

@@ -1,5 +1,5 @@
-#[cfg(test)]
 mod tests {
+    #[ignore]
     #[test]
     pub fn test_connect() {
         let fake_host = "https://www.chiark.greenend.org.uk/gtatham/coroutines.html";
@@ -60,6 +60,27 @@ mod tests {
             title.as_deref(),
             None,
             "The parser should return None for an empty title"
+        );
+    }
+    #[test]
+    pub fn test_missing_title() {
+        let fake_html = r#"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+    <h1>Test Page</h1>
+</body>
+</html>
+"#;
+
+        let title = web_scraper::parse_title(fake_html);
+
+        assert_eq!(
+            title.as_deref(),
+            None,
+            "The parser should return None for an missing title"
         );
     }
 }

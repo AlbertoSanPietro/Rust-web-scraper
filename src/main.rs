@@ -18,12 +18,10 @@ fn main() {
 
     println!("Length: {}", body.len());
 
-    let title = parse_title(&body);
+    let title = parse_title(&body).unwrap_or_else(|| {
+        eprintln!("Title not found in HTML document");
+        "No title found...".to_string()
+    });
 
-    let title_string = match title {
-        Some(s) => s,
-        None => "No title found...".to_string(),
-    };
-
-    println!("title: {}", title_string);
+    println!("title: {}", title);
 }

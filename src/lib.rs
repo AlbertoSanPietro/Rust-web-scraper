@@ -1,7 +1,6 @@
 use reqwest::blocking::Client;
 use scraper::{Html, Selector};
 use serde::Serialize;
-use std::io::Read;
 
 #[derive(Debug, PartialEq, Eq, Serialize)]
 pub struct Heading {
